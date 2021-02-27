@@ -1,0 +1,27 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <title>tdx-virtual-scroll demo</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta http-equiv="pragma" content="no-cache" />
+    <script type="module" src="../dist/tdx-virtual-scroll"></script>
+    <script type="module">
+      const virtualScroll = document.querySelector('tdx-virtual-scroll');
+
+      virtualScroll.itemHeight = '30px';
+      virtualScroll.items = new Array(10000).fill(null).map((_, index) => index);
+      virtualScroll.renderItem = (item) => `<div style="height: 28px; background-color: grey; border: 1px solid red;">${item}</div>`;
+      virtualScroll.visibleItemCount =  25;
+    </script>
+
+    <style>
+      tdx-virtual-scroll {
+        height: 300px;
+      }
+    </style>
+  </head>
+  <body>
+    <tdx-virtual-scroll></tdx-virtual-scroll>
+  </body>
+</html>
