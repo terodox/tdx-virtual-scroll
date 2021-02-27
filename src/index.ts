@@ -1,4 +1,5 @@
 import { calculateView } from './calculate-view';
+import { debounce } from './debounce';
 
 export interface TdxVirtualScrollOptions {
   debounceTimeInMs: number;
@@ -17,8 +18,6 @@ export class TdxVirtualScroll extends HTMLElement {
   visibleItemCount: number = 10;
 
   private _contentArea: HTMLDivElement;
-  // @ts-ignore not initialized in constructor
-  private _debounceTimeInMsr: NodeJS.Timeout;
   private _root: ShadowRoot;
   private _viewport: HTMLDivElement;
   private _visibleItems: HTMLDivElement;
@@ -68,7 +67,7 @@ export class TdxVirtualScroll extends HTMLElement {
     this._viewport = this._root.querySelector<HTMLDivElement>('.viewport') as HTMLDivElement;
     this._visibleItems = this._root.querySelector<HTMLDivElement>('.visible-items') as HTMLDivElement;
 
-    this._viewport.addEventListener("scroll", () => this._debounce(this._handleScroll.bind(this), this.debounceTimeInMs), {
+    this._viewport.addEventListener("scroll", () => debounce(this._handleScroll.bind(this), this.debounceTimeInMs), {
       passive: true
     });
   }
@@ -82,13 +81,6 @@ export class TdxVirtualScroll extends HTMLElement {
     this.visibleItemCount = options.visibleItemCount;
 
     this._handleScroll();
-  }
-
-  // TODO Refactor to own module
-  private _debounce(functionToCall: () => void, howLong: number) {
-    console.log('debounce');
-    clearTimeout(this._debounceTimeInMsr);
-    this._debounceTimeInMsr = setTimeout(functionToCall, howLong);
   }
 
   private _handleScroll() {
