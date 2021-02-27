@@ -5,23 +5,37 @@
     <title>tdx-virtual-scroll demo</title>
     <meta name="viewport" content="width=device-width, initial-scale=1" />
     <meta http-equiv="pragma" content="no-cache" />
-    <script type="module" src="../dist/tdx-virtual-scroll"></script>
+    <script type="module" src="../dist/tdx-virtual-scroll.js"></script>
     <script type="module">
       const virtualScroll = document.querySelector('tdx-virtual-scroll');
 
-      virtualScroll.itemHeight = '30px';
-      virtualScroll.items = new Array(10000).fill(null).map((_, index) => index);
-      virtualScroll.renderItem = (item) => `<div style="height: 28px; background-color: grey; border: 1px solid red;">${item}</div>`;
-      virtualScroll.visibleItemCount =  25;
+      virtualScroll.setOptions({
+        debounceTimeInMs: 30,
+        itemHeight: 30,
+        items: new Array(10000).fill(null).map((_, index) => index),
+        renderItem: (item) => {
+          const newDiv = document.createElement('div');
+          newDiv.style.height = '28px';
+          newDiv.style.backgroundColor = 'grey';
+          newDiv.style.border = '1px solid red';
+          newDiv.textContent = item;
+          return newDiv;
+        },
+        visibleItemCount: 100
+      });
     </script>
 
     <style>
-      tdx-virtual-scroll {
+      .scroll-container {
         height: 300px;
+        width: 200px;
+        border: 1px solid black;
       }
     </style>
   </head>
   <body>
-    <tdx-virtual-scroll></tdx-virtual-scroll>
+    <div class="scroll-container">
+      <tdx-virtual-scroll></tdx-virtual-scroll>
+    </div>
   </body>
 </html>
