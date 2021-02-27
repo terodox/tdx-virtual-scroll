@@ -10,7 +10,6 @@ export interface TdxVirtualScrollOptions {
 }
 
 export class TdxVirtualScroll extends HTMLElement {
-  childItems: HTMLElement[] = [];
   debounceTimeInMs: number = 0;
   items: any[] = [];
   itemHeight: number = 0;
@@ -58,7 +57,7 @@ export class TdxVirtualScroll extends HTMLElement {
     </style>
     <div class="viewport">
       <div class="content-area">
-        <div class="visible-items">${this.childItems}</div>
+        <div class="visible-items"></div>
       </div>
     </div>
     `;
@@ -102,15 +101,18 @@ export class TdxVirtualScroll extends HTMLElement {
     });
   }
 
-  private _updateView({ contentAreaHeight, startNodeIndex, visibleAreaOffsetTop } : { contentAreaHeight: number, startNodeIndex: number, visibleAreaOffsetTop: number }) {
+  private _updateView(
+    { contentAreaHeight, startNodeIndex, visibleAreaOffsetTop } :
+    { contentAreaHeight: number, startNodeIndex: number, visibleAreaOffsetTop: number }
+  ) {
     this._contentArea.style.height = `${contentAreaHeight}px`;
     this._visibleItems.style.transform = `translateY(${visibleAreaOffsetTop}px)`;
 
     // TODO area for improvement - this should do differential rendering - not re-render EVERYTHING
-    this.childItems = new Array(this.visibleItemCount)
+    const childItems = new Array(this.visibleItemCount)
       .fill(null)
       .map((_, index) => this.renderItem(index + startNodeIndex));
-    this._renderVisibleItems(this.childItems);
+    this._renderVisibleItems(childItems);
   }
 
   private _renderVisibleItems(newChildren: Node []) {
