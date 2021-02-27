@@ -1,5 +1,4 @@
 import { nodeResolve } from '@rollup/plugin-node-resolve';
-import serve from 'rollup-plugin-serve'
 import typescript from '@wessberg/rollup-plugin-ts';
 
 export default {
@@ -10,10 +9,6 @@ export default {
   },
   plugins: [
     nodeResolve(),
-    serve({
-      open: true,
-      openPage: 'demo',
-    }),
     typescript({
       tsconfig: 'tsconfig.json'
     })

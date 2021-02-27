@@ -4,6 +4,7 @@
   "description": "An inifite scroll web component",
   "main": "index.js",
   "scripts": {
+    "start": "rollup --config rollup.config.dev.js --watch",
     "build": "rollup --config",
     "test": "jasmine --config jasmine.config.js"
   },
