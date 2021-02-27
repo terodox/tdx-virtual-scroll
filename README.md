@@ -1,2 +1,3 @@
-# tdx-infinite-scroll
-An infinite scroll web component
+# tdx-virtual-scroll
+
+A virtual scroll web component
