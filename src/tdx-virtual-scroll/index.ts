@@ -1,5 +1,5 @@
 import { calculateView } from './calculate-view';
-import { debounce } from './debounce';
+import { debounce } from '../debounce';
 
 export interface TdxVirtualScrollOptions {
   debounceTimeInMs: number;
@@ -29,7 +29,7 @@ export class TdxVirtualScroll extends HTMLElement {
 
   constructor() {
     super();
-    this._root = this.attachShadow({ mode : 'open' });
+    this._root = this.attachShadow({ mode: 'open' });
 
     this._root.innerHTML = `
     <style>
@@ -62,13 +62,23 @@ export class TdxVirtualScroll extends HTMLElement {
     </div>
     `;
 
-    this._contentArea = this._root.querySelector<HTMLDivElement>('.content-area') as HTMLDivElement;
-    this._viewport = this._root.querySelector<HTMLDivElement>('.viewport') as HTMLDivElement;
-    this._visibleItems = this._root.querySelector<HTMLDivElement>('.visible-items') as HTMLDivElement;
+    this._contentArea = this._root.querySelector<HTMLDivElement>(
+      '.content-area'
+    ) as HTMLDivElement;
+    this._viewport = this._root.querySelector<HTMLDivElement>(
+      '.viewport'
+    ) as HTMLDivElement;
+    this._visibleItems = this._root.querySelector<HTMLDivElement>(
+      '.visible-items'
+    ) as HTMLDivElement;
 
-    this._viewport.addEventListener("scroll", () => debounce(this._handleScroll.bind(this), this.debounceTimeInMs), {
-      passive: true
-    });
+    this._viewport.addEventListener(
+      'scroll',
+      () => debounce(this._handleScroll.bind(this), this.debounceTimeInMs),
+      {
+        passive: true,
+      }
+    );
   }
 
   setOptions(options: TdxVirtualScrollOptions) {
@@ -101,10 +111,15 @@ export class TdxVirtualScroll extends HTMLElement {
     });
   }
 
-  private _updateView(
-    { contentAreaHeight, startNodeIndex, visibleAreaOffsetTop } :
-    { contentAreaHeight: number, startNodeIndex: number, visibleAreaOffsetTop: number }
-  ) {
+  private _updateView({
+    contentAreaHeight,
+    startNodeIndex,
+    visibleAreaOffsetTop,
+  }: {
+    contentAreaHeight: number;
+    startNodeIndex: number;
+    visibleAreaOffsetTop: number;
+  }) {
     this._contentArea.style.height = `${contentAreaHeight}px`;
     this._visibleItems.style.transform = `translateY(${visibleAreaOffsetTop}px)`;
 
@@ -115,8 +130,8 @@ export class TdxVirtualScroll extends HTMLElement {
     this._renderVisibleItems(childItems);
   }
 
-  private _renderVisibleItems(newChildren: Node []) {
-    while(this._visibleItems.childNodes.length) {
+  private _renderVisibleItems(newChildren: Node[]) {
+    while (this._visibleItems.childNodes.length) {
       this._visibleItems.removeChild(this._visibleItems.firstChild as Node);
     }
 

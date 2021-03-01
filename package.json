@@ -1,5 +1,5 @@
 {
-  "name": "tdx-infinite-scroll",
+  "name": "tdx-virtual-scroll",
   "version": "0.0.0",
   "description": "An inifite scroll web component",
   "main": "index.js",
@@ -10,19 +10,20 @@
   },
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/terodox/tdx-infinite-scroll.git"
+    "url": "git+https://github.com/terodox/tdx-virtual-scroll.git"
   },
   "keywords": [
     "web-component",
+    "virtual-scroll",
     "infinite-scroll",
     "component"
   ],
   "author": "terodox@gmail.com",
   "license": "MIT",
   "bugs": {
-    "url": "https://github.com/terodox/tdx-infinite-scroll/issues"
+    "url": "https://github.com/terodox/tdx-virtual-scroll/issues"
   },
-  "homepage": "https://github.com/terodox/tdx-infinite-scroll#readme",
+  "homepage": "https://github.com/terodox/tdx-virtual-scroll#readme",
   "devDependencies": {
     "@rollup/plugin-node-resolve": "11.2.0",
     "@shoelace-style/shoemaker": "1.0.0-beta.6",

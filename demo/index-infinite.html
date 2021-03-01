@@ -7,21 +7,24 @@
     <meta http-equiv="pragma" content="no-cache" />
     <script type="module" src="../dist/tdx-virtual-scroll.js"></script>
     <script type="module">
-      const virtualScroll = document.querySelector('tdx-virtual-scroll');
+      const virtualScroll = document.querySelector('tdx-infinite-scroll');
 
       virtualScroll.setOptions({
-        debounceTime: 5,
-        itemHeight: 30,
-        items: new Array(10000).fill(null).map((_, index) => index),
+        items: new Array(25).fill(null).map((_, index) => index),
+        loadMoreItems: (page) => {
+          console.log('Loading more', page);
+          const startAt = page * 25;
+          return new Array(25).fill(null).map((_, index) => index + startAt)
+        },
         renderItem: (item) => {
           const newDiv = document.createElement('div');
-          newDiv.style.height = '28px';
+          const height = Math.ceil((Math.random() * 30) + 30);
+          newDiv.style.height = `${height}px`;
           newDiv.style.backgroundColor = 'grey';
           newDiv.style.border = '1px solid red';
           newDiv.textContent = item;
           return newDiv;
         },
-        visibleItemCount: 25
       });
     </script>
 
@@ -35,7 +38,11 @@
   </head>
   <body>
     <div class="scroll-container">
-      <tdx-virtual-scroll></tdx-virtual-scroll>
+      <tdx-infinite-scroll>
+        <div slot="loading-item" style="height: 100px">
+          Load it up!;
+        </div>
+      </tdx-infinite-scroll>
     </div>
   </body>
 </html>
