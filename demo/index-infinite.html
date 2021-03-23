@@ -10,11 +10,17 @@
       const virtualScroll = document.querySelector('tdx-infinite-scroll');
 
       virtualScroll.setOptions({
+        debounceTimeInMs: 50,
         items: new Array(25).fill(null).map((_, index) => index),
-        loadMoreItems: (page) => {
+        loadMoreItemsOffset: 1000,
+        loadMoreItems: async (page) => {
           console.log('Loading more', page);
+          const delayInMs = Math.random() * 2000 + 100;
           const startAt = page * 25;
-          return new Array(25).fill(null).map((_, index) => index + startAt)
+          console.log('Delaying', delayInMs);
+          return new Promise(resolve => {
+            setTimeout(() => resolve(new Array(25).fill(null).map((_, index) => index + startAt)), delayInMs);
+          });
         },
         renderItem: (item) => {
           const newDiv = document.createElement('div');

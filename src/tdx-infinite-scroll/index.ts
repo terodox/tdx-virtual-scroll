@@ -1,19 +1,24 @@
+import { debounce } from '../debounce';
+
 export interface TdxInfiniteScrollOptions {
+  debounceTimeInMs: number;
   items: any[];
+  loadMoreItemsOffset: number;
   loadMoreItems: (page: number) => Promise<any[]>;
   renderItem: (item: any) => HTMLElement;
 }
 
 export class TdxInfiniteScroll extends HTMLElement {
+  debounceTimeInMs: number = 50;
   items: any[] = [];
+  loadMoreItemsOffset: number = 100;
   loadMoreItems: (page: number) => Promise<any[]> = () => Promise.resolve([]);
   renderItem: (item: any) => HTMLElement = () => document.createElement('div');
 
-  private _contentArea: HTMLDivElement;
   private _isLoadingMoreItems: boolean = false;
   private _lastRenderedItemIndex: number = 0;
-  private _loadingItem: HTMLSlotElement;
-  private _loadMoreItemsObserver: IntersectionObserver;
+  private _contentArea: HTMLDivElement;
+  private _viewport: HTMLDivElement;
   private _page: number = 0;
   private _renderedItems: HTMLDivElement;
   private _root: ShadowRoot;
@@ -55,33 +60,42 @@ export class TdxInfiniteScroll extends HTMLElement {
     </div>
     `;
 
-    this._contentArea = this._root.querySelector<HTMLDivElement>(
-      '.content-area'
-    ) as HTMLDivElement;
-    this._loadingItem = this._root.querySelector<HTMLSlotElement>(
-      '#loading-item'
-    ) as HTMLSlotElement;
     this._renderedItems = this._root.querySelector<HTMLDivElement>(
       '.rendered-items'
     ) as HTMLDivElement;
+    this._viewport = this._root.querySelector<HTMLDivElement>(
+      '.viewport'
+    ) as HTMLDivElement;
+    this._contentArea = this._root.querySelector<HTMLDivElement>(
+      '.content-area'
+    ) as HTMLDivElement;
 
-    this._loadMoreItemsObserver = new IntersectionObserver(
-      this._loadMoreItems.bind(this),
+
+    this._viewport.addEventListener(
+      'scroll',
+      () => debounce(this._calculateLoadMore.bind(this), this.debounceTimeInMs),
       {
-        root: this._contentArea,
-        rootMargin: '0px',
-        threshold: 0.5,
+        passive: true,
       }
     );
-    this._loadMoreItemsObserver.observe(this._loadingItem);
-
     this._updateView();
   }
 
   setOptions(options: TdxInfiniteScrollOptions) {
     this.items = options.items;
     this.loadMoreItems = options.loadMoreItems;
+    this.loadMoreItemsOffset = options.loadMoreItemsOffset;
     this.renderItem = options.renderItem;
+    this.debounceTimeInMs = options.debounceTimeInMs;
+    this._loadMoreItems();
+  }
+
+  private _calculateLoadMore() {
+    console.log(this._contentArea.clientHeight, this._viewport.scrollTop + this._viewport.clientHeight);
+    if (Math.abs(this._viewport.scrollTop + this._viewport.clientHeight - this._contentArea.clientHeight) < this.loadMoreItemsOffset) {
+      console.log('load more things now');
+      this._loadMoreItems();
+    }
   }
 
   private async _loadMoreItems() {
@@ -92,6 +106,7 @@ export class TdxInfiniteScroll extends HTMLElement {
       try {
         const newItems = await this.loadMoreItems(this._page);
         this.items = [...this.items, ...newItems];
+        console.log('Added more items for a total of', this.items.length);
       } finally {
         this._isLoadingMoreItems = false;
       }
