@@ -7,7 +7,7 @@
     <meta http-equiv="pragma" content="no-cache" />
     <script type="module" src="../dist/tdx-virtual-scroll.js"></script>
     <script type="module">
-      const virtualScroll = document.querySelector('tdx-infinite-scroll');
+      const virtualScroll = document.querySelector('tdx-virtual-infinite-scroll');
 
       virtualScroll.setOptions({
         debounceTimeInMs: 50,
@@ -36,19 +36,19 @@
 
     <style>
       .scroll-container {
-        height: calc(100vh - 50px);
-        width: 300px;
+        height: 300px;
+        width: 200px;
         border: 1px solid black;
       }
     </style>
   </head>
   <body>
     <div class="scroll-container">
-      <tdx-infinite-scroll>
+      <tdx-virtual-infinite-scroll>
         <div slot="loading-item" style="height: 100px">
           Load it up!
         </div>
-      </tdx-infinite-scroll>
+      </tdx-virtual-infinite-scroll>
     </div>
   </body>
 </html>

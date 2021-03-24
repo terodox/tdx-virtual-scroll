@@ -1,25 +1,27 @@
-import { calculateView } from './calculate-view';
 import { debounce } from '../debounce';
 
-export interface TdxVirtualInfiniteScrollOptions {
+export interface TdxInfiniteScrollOptions {
   debounceTimeInMs: number;
   items: any[];
+  loadMoreItemsOffset: number;
+  loadMoreItems: (page: number) => Promise<any[]>;
   renderItem: (item: any) => HTMLElement;
-  visibleItemCount: number;
 }
 
-export class TdxVirtualInfiniteScroll extends HTMLElement {
-  debounceTimeInMs: number = 0;
+export class TdxInfiniteScroll extends HTMLElement {
+  debounceTimeInMs: number = 50;
   items: any[] = [];
+  loadMoreItemsOffset: number = 100;
+  loadMoreItems: (page: number) => Promise<any[]> = () => Promise.resolve([]);
   renderItem: (item: any) => HTMLElement = () => document.createElement('div');
-  visibleItemCount: number = 10;
 
+  private _isLoadingMoreItems: boolean = false;
+  private _lastRenderedItemIndex: number = 0;
   private _contentArea: HTMLDivElement;
-  private _itemOffsets: number[] = [];
-  private _isOptionsSet: boolean = false;
-  private _root: ShadowRoot;
   private _viewport: HTMLDivElement;
-  private _visibleItems: HTMLDivElement;
+  private _page: number = 0;
+  private _renderedItems: HTMLDivElement;
+  private _root: ShadowRoot;
 
   static tagName = 'tdx-virtual-infinite-scroll';
 
@@ -43,126 +45,88 @@ export class TdxVirtualInfiniteScroll extends HTMLElement {
         overflow: scroll;
       }
       .content-area {
-        height: 100%;
         overflow: hidden;
       }
-
 
       .content-area {
         background-color: green;
       }
-      .visible-items {
-        background-color: blue;
-      }
     </style>
     <div class="viewport">
       <div class="content-area">
-        <div class="visible-items"></div>
+        <div class="rendered-items"></div>
+        <slot id="loading-item" name="loading-item">Loading...</slot>
       </div>
     </div>
     `;
 
-    this._contentArea = this._root.querySelector<HTMLDivElement>(
-      '.content-area'
+    this._renderedItems = this._root.querySelector<HTMLDivElement>(
+      '.rendered-items'
     ) as HTMLDivElement;
     this._viewport = this._root.querySelector<HTMLDivElement>(
       '.viewport'
     ) as HTMLDivElement;
-    this._visibleItems = this._root.querySelector<HTMLDivElement>(
-      '.visible-items'
+    this._contentArea = this._root.querySelector<HTMLDivElement>(
+      '.content-area'
     ) as HTMLDivElement;
+
 
     this._viewport.addEventListener(
       'scroll',
-      () => debounce(this._handleScroll.bind(this), this.debounceTimeInMs),
+      () => debounce(this._calculateLoadMore.bind(this), this.debounceTimeInMs),
       {
         passive: true,
       }
     );
+    this._updateView();
   }
 
-  setOptions(options: TdxVirtualInfiniteScrollOptions) {
-    if (this._isOptionsSet) {
-      throw new Error('Options can be set only once');
-    }
-    this._isOptionsSet = true;
-
-    // TODO Options validation
-    this.debounceTimeInMs = options.debounceTimeInMs;
+  setOptions(options: TdxInfiniteScrollOptions) {
     this.items = options.items;
+    this.loadMoreItems = options.loadMoreItems;
+    this.loadMoreItemsOffset = options.loadMoreItemsOffset;
     this.renderItem = options.renderItem;
-    this.visibleItemCount = options.visibleItemCount;
-
-    // const newChildItems = this._createItems(0, this.visibleItemCount - 1);
-    // this._visibleItems.appendChild;
-    // this._handleScroll();
+    this.debounceTimeInMs = options.debounceTimeInMs;
+    this._loadMoreItems();
   }
 
-  _createItems() {
-    //startIndex: number, endIndex: number) {
-    // const childItems = new Array(endIndex - startIndex)
-    //   .fill(null)
-    //   .map((_, index) => this.renderItem(index + startIndex));
-  }
-
-  private _handleScroll() {
-    console.log('handleScroll');
-
-    const viewSettings = calculateView({
-      itemOffsets: this._itemOffsets,
-      offsetTop: this._viewport.scrollTop,
-      visibleItemCount: this.visibleItemCount,
-    });
-
-    this._updateView({
-      contentAreaHeight: viewSettings.contentAreaHeight,
-      startNodeIndex: viewSettings.startNodeIndex,
-      visibleAreaOffsetTop: viewSettings.visibleAreaOffsetTop,
-    });
-  }
-
-  private _updateView({
-    contentAreaHeight,
-    startNodeIndex,
-    visibleAreaOffsetTop,
-  }: {
-    contentAreaHeight: number;
-    startNodeIndex: number;
-    visibleAreaOffsetTop: number;
-  }) {
-    this._contentArea.style.height = `${contentAreaHeight}px`;
-    this._visibleItems.style.transform = `translateY(${visibleAreaOffsetTop}px)`;
-
-    // TODO area for improvement - this should do differential rendering - not re-render EVERYTHING
-    const childItems = new Array(this.visibleItemCount)
-      .fill(null)
-      .map((_, index) => this.renderItem(index + startNodeIndex));
-    this._renderVisibleItems(childItems, startNodeIndex);
-  }
-
-  private _renderVisibleItems(newChildren: Node[], startNodeIndex: number) {
-    while (this._visibleItems.childNodes.length) {
-      this._visibleItems.removeChild(this._visibleItems.firstChild as Node);
+  private _calculateLoadMore() {
+    console.log(this._contentArea.clientHeight, this._viewport.scrollTop + this._viewport.clientHeight);
+    if (Math.abs(this._viewport.scrollTop + this._viewport.clientHeight - this._contentArea.clientHeight) < this.loadMoreItemsOffset) {
+      console.log('load more things now');
+      this._loadMoreItems();
     }
-
-    const fragment = document.createDocumentFragment();
-    newChildren.forEach((child: Node) => fragment.appendChild(child));
-
-    this._visibleItems.appendChild(fragment);
-
-    this._calculateItemOffsets(startNodeIndex);
   }
 
-  private _calculateItemOffsets(startNodeIndex: number) {
-    let index = 0;
-    for (const item of this._visibleItems.children) {
-      // TODO safety to make sure previous values have been populated
-      const element = item as HTMLElement;
-      this._itemOffsets[startNodeIndex + index] =
-        this._itemOffsets[startNodeIndex + index - 1] + element.offsetHeight;
-      index++;
+  private async _loadMoreItems() {
+    console.log('_loadMoreItems');
+    if (!this._isLoadingMoreItems) {
+      this._isLoadingMoreItems = true;
+      this._page++;
+      try {
+        const newItems = await this.loadMoreItems(this._page);
+        this.items = [...this.items, ...newItems];
+        console.log('Added more items for a total of', this.items.length);
+      } finally {
+        this._isLoadingMoreItems = false;
+      }
+      this._updateView();
     }
+  }
 
-    console.log(this._itemOffsets);
+  private _updateView() {
+    if (this._lastRenderedItemIndex < this.items.length - 1) {
+      const newItemsFragment = document.createDocumentFragment();
+      for (
+        let itemIndex = this._lastRenderedItemIndex;
+        itemIndex < this.items.length;
+        itemIndex++
+      ) {
+        const newItem = this.renderItem(this.items[itemIndex]);
+        newItemsFragment.appendChild(newItem);
+      }
+      this._renderedItems.appendChild(newItemsFragment);
+      this._lastRenderedItemIndex = this.items.length - 1;
+    }
   }
 }
