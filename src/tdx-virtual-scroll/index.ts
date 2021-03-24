@@ -46,14 +46,6 @@ export class TdxVirtualScroll extends HTMLElement {
         height: 100%;
         overflow: hidden;
       }
-
-
-      .content-area {
-        background-color: green;
-      }
-      .visible-items {
-        background-color: blue;
-      }
     </style>
     <div class="viewport">
       <div class="content-area">

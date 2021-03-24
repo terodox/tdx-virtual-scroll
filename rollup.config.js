@@ -1,5 +1,6 @@
 import { nodeResolve } from '@rollup/plugin-node-resolve';
 import typescript from '@wessberg/rollup-plugin-ts';
+import { uglify } from 'rollup-plugin-uglify';
 
 export default {
   input: 'src/index.ts',
@@ -11,6 +12,7 @@ export default {
     nodeResolve(),
     typescript({
       tsconfig: 'tsconfig.json'
-    })
+    }),
+    uglify()
   ]
 };
