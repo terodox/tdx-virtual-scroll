@@ -7,9 +7,9 @@
     <meta http-equiv="pragma" content="no-cache" />
     <script type="module" src="../dist/tdx-virtual-scroll.js"></script>
     <script type="module">
-      const virtualScroll = document.querySelector('tdx-infinite-scroll');
+      const infiniteScroll = document.querySelector('tdx-infinite-scroll');
 
-      virtualScroll.setOptions({
+      infiniteScroll.setOptions({
         debounceTimeInMs: 50,
         items: new Array(25).fill(null).map((_, index) => index),
         loadMoreItemsOffset: 1000,
