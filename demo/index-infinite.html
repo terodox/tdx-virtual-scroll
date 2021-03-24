@@ -2,7 +2,7 @@
 <html lang="en">
   <head>
     <meta charset="utf-8" />
-    <title>tdx-virtual-scroll demo</title>
+    <title>tdx-infinite-scroll demo</title>
     <meta name="viewport" content="width=device-width, initial-scale=1" />
     <meta http-equiv="pragma" content="no-cache" />
     <script type="module" src="../dist/tdx-virtual-scroll.js"></script>
@@ -13,25 +13,29 @@
         debounceTimeInMs: 50,
         items: new Array(25).fill(null).map((_, index) => index),
         loadMoreItemsOffset: 1000,
-        loadMoreItems: async (page) => {
-          console.log('Loading more', page);
+        loadMoreItems: loadMoreItemsWithRandomDelay,
+        renderItem: makeRandomHeightDiv
+      });
+
+      async function loadMoreItemsWithRandomDelay(page) {
+        console.log('Loading more', page);
           const delayInMs = Math.random() * 2000 + 100;
           const startAt = page * 25;
           console.log('Delaying', delayInMs);
           return new Promise(resolve => {
             setTimeout(() => resolve(new Array(25).fill(null).map((_, index) => index + startAt)), delayInMs);
           });
-        },
-        renderItem: (item) => {
-          const newDiv = document.createElement('div');
+      }
+
+      function makeRandomHeightDiv(item) {
+        const newDiv = document.createElement('div');
           const height = Math.ceil((Math.random() * 30) + 30);
           newDiv.style.height = `${height}px`;
           newDiv.style.backgroundColor = 'grey';
           newDiv.style.border = '1px solid red';
           newDiv.textContent = item;
           return newDiv;
-        },
-      });
+      }
     </script>
 
     <style>
